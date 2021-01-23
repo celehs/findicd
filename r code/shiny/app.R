@@ -105,18 +105,28 @@ server <- function(input, output, session) {
     if(length(s)>0){
       if(input$method == "UMLS"){
         otherstr_cui = cui_dict_1[[cui_str_s_1$loc.dict[s]]]
+        if(length(otherstr_cui)>1){
+          otherstr_cui = setdiff(otherstr_cui,cui_str_s_1$str[s])
+          otherstr_cui_str = paste(otherstr_cui, collapse = ", ")
+          paste0("The following strings share the same CUI (",cui_str_s_1$cui[s],
+                 ") as ", cui_str_s_1$str[s]," : \n ",otherstr_cui_str) 
+        }else{
+          paste0("No string shares the same CUI (",cui_str_s_1$cui[s],
+                 ") as the one you selected - \n ", cui_str_s_1$str[s],".") 
+        }
       }else{
-        otherstr_cui = cui_dict_1[[cui_str_s_1$loc.dict[s]]]
+        otherstr_cui = cui_dict_2[[cui_str_s_2$loc.dict[s]]]
+        if(length(otherstr_cui)>1){
+          otherstr_cui = setdiff(otherstr_cui,cui_str_s_2$str[s])
+          otherstr_cui_str = paste(otherstr_cui, collapse = ", ")
+          paste0("The following strings share the same CUI (",cui_str_s_2$cui[s],
+                 ") as ", cui_str_s_2$str[s]," : \n ",otherstr_cui_str) 
+        }else{
+          paste0("No string shares the same CUI (",cui_str_s_2$cui[s],
+                 ") as the one you selected - \n ", cui_str_s_2$str[s],".") 
+        }
       }
-      if(length(otherstr_cui)>1){
-        otherstr_cui = setdiff(otherstr_cui,cui_str_s_1$str[s])
-        otherstr_cui_str = paste(otherstr_cui, collapse = ", ")
-        paste0("The following strings share the same CUI (",cui_str_s_1$cui[s],
-               ") as ", cui_str_s_1$str[s]," : \n ",otherstr_cui_str) 
-      }else{
-        paste0("No string shares the same CUI (",cui_str_s_1$cui[s],
-               ") as the one you selected - \n ", cui_str_s_1$str[s],".") 
-      }
+
     }else{
      
       
@@ -130,7 +140,11 @@ server <- function(input, output, session) {
   output$wordtitle <- renderText({
     s = input$table_rows_selected
     if(length(s)>0){
-      cui_str_s_1$str[s]
+      if(input$method == "UMLS"){
+        cui_str_s_1$str[s]
+      }else{
+        cui_str_s_2$str[s]
+      }
     }else{
       paste0("Try to click a row in the table button.") 
     }
@@ -181,9 +195,11 @@ server <- function(input, output, session) {
         if(input$method=="UMLS"){
           target_emb_row_id = cui_str_s_1$loc.emb[s]
           target_emb_row_id = as.numeric(target_emb_row_id)
+          cui_str_s = cui_str_s_1
         }else{
           target_emb_row_id = cui_str_s_2$loc.emb[s]
           target_emb_row_id = as.numeric(target_emb_row_id)
+          cui_str_s = cui_str_s_2
         }
         if(is.na(target_emb_row_id)==FALSE){
           selected_cosine = cosine_matrix_top100[target_emb_row_id,]
@@ -200,7 +216,7 @@ server <- function(input, output, session) {
           })
           selected_emb = emb[selected_str_id,]
           selected_emb = cbind(selected_cosine[1+c(1:n)],selected_emb)
-          colnames(selected_emb)[1] = paste0("cosine to '",cui_str_s_1$str[s],"'") 
+          colnames(selected_emb)[1] = paste0("cosine to '",cui_str_s$str[s],"'") 
           write.csv(selected_emb,path,row.names = FALSE)
         }else{
           write.csv(data.frame("info"="No related ICD is found!"),path,row.names = FALSE)
