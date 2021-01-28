@@ -1,0 +1,12 @@
+name: findicd
+title: findicd
+username:
+account: xinxiong
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3482451
+bundleId: 4125427
+url: https://xinxiong.shinyapps.io/findicd/
+when: 1611231310.72333
+asMultiple: FALSE
+asStatic: FALSE
