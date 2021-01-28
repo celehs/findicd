@@ -25,30 +25,48 @@ ui <- dashboardPage(
     conditionalPanel(condition = "input.table_rows_selected.length>=1",
                       fluidRow(column(12,align="center",
                                       textOutput("wordtitle",container = h2)))),
-    
-    dropdown(
-      awesomeRadio(
-        inputId = "method",
-        label = "Mapping method", 
-        choices = c("UMLS", "UMLS + NER"),
-        selected = "UMLS",
-        inline = TRUE, 
-        status = "success"),
-      
-      hr(),
-      h4("Possible strings"),
-      br(),
-      DT::dataTableOutput("table"),
-      style = "unite", icon = icon("table"),
-      status = "primary", width = "350px",
-      tooltip = "Try to click one row \n as your cui string input!",
-      
-      animate = animateOptions(
-        enter = animations$fading_entrances$fadeInDown,
-        exit = animations$fading_exits$fadeOutUp,
-        duration = 0
-      )
-    ),
+
+    fluidRow(
+      column(2),
+      column(3,     
+             dropdown(
+               awesomeRadio(
+                 inputId = "method",
+                 label = "Mapping method", 
+                 choices = c("UMLS", "UMLS + NER"),
+                 selected = "UMLS",
+                 inline = TRUE, 
+                 status = "success"),
+               
+               hr(),
+               h4("Possible strings"),
+               br(),
+               DT::dataTableOutput("table"),
+               style = "unite", icon = icon("table"),
+               status = "primary", width = "350px",right = TRUE,
+               tooltip = "Try to click one row \n as your cui string input!",
+               
+               animate = animateOptions(
+                 enter = animations$fading_entrances$fadeInDown,
+                 exit = animations$fading_exits$fadeOutUp,
+                 duration = 0
+               )
+             )),
+      column(4),
+      column(3,dropdown(
+        
+        h4("Do you know?"),
+        br(),
+        htmlOutput("doyouknow"),
+        style = "unite", icon = icon("exclamation-circle"),
+        status = "primary", width = "350px",right=TRUE,
+        
+        animate = animateOptions(
+          enter = animations$fading_entrances$fadeInDown,
+          exit = animations$fading_exits$fadeOutUp,
+          duration = 0
+        )
+      ))),
       fluidRow(
         column(width = 6,
                conditionalPanel(condition =  "input.table_rows_selected.length>=1",
@@ -77,9 +95,8 @@ ui <- dashboardPage(
                               box(width = NULL,
                                   title = "Matched info",
                                   DT::dataTableOutput("table3"),
-                                  downloadButton("downloadData_2", "Download as .csv"),
-                                  hr(),
-                                  h5(icon("exclamation")," ",textOutput("doyouknow",inline = TRUE))
+                                  downloadButton("downloadData_2", "Download as .csv")
+                                 
                               ))
 
              
@@ -100,30 +117,34 @@ ui <- dashboardPage(
 
 
 server <- function(input, output, session) {
-  output$doyouknow <- renderText({
+  output$doyouknow <- renderUI({
     s = input$table_rows_selected
     if(length(s)>0){
       if(input$method == "UMLS"){
         otherstr_cui = cui_dict_1[[cui_str_s_1$loc.dict[s]]]
         if(length(otherstr_cui)>1){
           otherstr_cui = setdiff(otherstr_cui,cui_str_s_1$str[s])
-          otherstr_cui_str = paste(otherstr_cui, collapse = ", ")
-          paste0("The following strings share the same CUI (",cui_str_s_1$cui[s],
-                 ") as ", cui_str_s_1$str[s]," : \n ",otherstr_cui_str) 
+          otherstr_cui_str = paste(otherstr_cui, collapse = "<br/>")
+          HTML(paste(paste0("The following strings share the same CUI (",cui_str_s_1$cui[s],
+                 ") as <br/><b>", cui_str_s_1$str[s],"</b>: <br/> 
+                 <hr style='height:1px;border:none;border-top:1px double black;' />"),
+                 otherstr_cui_str))
         }else{
-          paste0("No string shares the same CUI (",cui_str_s_1$cui[s],
-                 ") as the one you selected - \n ", cui_str_s_1$str[s],".") 
+          HTML(paste0("No string shares the same CUI (",cui_str_s_1$cui[s],
+                 ") as the one you selected - \n ", cui_str_s_1$str[s])) 
         }
       }else{
         otherstr_cui = cui_dict_2[[cui_str_s_2$loc.dict[s]]]
         if(length(otherstr_cui)>1){
           otherstr_cui = setdiff(otherstr_cui,cui_str_s_2$str[s])
-          otherstr_cui_str = paste(otherstr_cui, collapse = ", ")
-          paste0("The following strings share the same CUI (",cui_str_s_2$cui[s],
-                 ") as ", cui_str_s_2$str[s]," : \n ",otherstr_cui_str) 
+          otherstr_cui_str = paste(otherstr_cui, collapse = "<br/>")
+          HTML(paste(paste0("The following strings share the same CUI (",cui_str_s_2$cui[s],
+                            ") as <br/><b>", cui_str_s_2$str[s],"</b>: <br/> 
+                 <hr style='height:1px;border:none;border-top:1px double black;' />"),
+                     otherstr_cui_str))
         }else{
-          paste0("No string shares the same CUI (",cui_str_s_2$cui[s],
-                 ") as the one you selected - \n ", cui_str_s_2$str[s],".") 
+          HTML(paste0("No string shares the same CUI (",cui_str_s_2$cui[s],
+                      ") as the one you selected - \n ", cui_str_s_2$str[s])) 
         }
       }
 
@@ -159,7 +180,7 @@ server <- function(input, output, session) {
     }
    }, rownames = FALSE,options = list(
     pageLength = 7
-      ),selection = 'single'))
+      ),selection = 'single'),server = TRUE)
   
   output$table3 <- DT::renderDataTable(DT::datatable({
     s = input$table_rows_selected
