@@ -6,8 +6,7 @@ library(DT)
 library(wordcloud2)
 library(viridis)
 library(stringr)
-#load("data/findicd.RData")
-load("data/raw.RData")
+load("data/fulldata.RData")
 
 
 ui <- dashboardPage(
@@ -58,6 +57,8 @@ ui <- dashboardPage(
         h4("Do you know?"),
         br(),
         htmlOutput("doyouknow"),
+        hr(),
+        DT::dataTableOutput("tabledoyouknow"),
         style = "unite", icon = icon("exclamation-circle"),
         status = "primary", width = "350px",right=TRUE,
         
@@ -123,12 +124,8 @@ server <- function(input, output, session) {
       if(input$method == "UMLS"){
         otherstr_cui = cui_dict_1[[cui_str_s_1$loc.dict[s]]]
         if(length(otherstr_cui)>1){
-          otherstr_cui = setdiff(otherstr_cui,cui_str_s_1$str[s])
-          otherstr_cui_str = paste(otherstr_cui, collapse = "<br/>")
-          HTML(paste(paste0("The following strings share the same CUI (",cui_str_s_1$cui[s],
-                 ") as <br/><b>", cui_str_s_1$str[s],"</b>: <br/> 
-                 <hr style='height:1px;border:none;border-top:1px double black;' />"),
-                 otherstr_cui_str))
+            HTML(paste0("The following ",length(otherstr_cui)-1, " strings share the same CUI (",cui_str_s_1$cui[s],
+                 ") as <b>", cui_str_s_1$str[s],"</b>: <br/>"))
         }else{
           HTML(paste0("No string shares the same CUI (",cui_str_s_1$cui[s],
                  ") as the one you selected - \n ", cui_str_s_1$str[s])) 
@@ -138,10 +135,8 @@ server <- function(input, output, session) {
         if(length(otherstr_cui)>1){
           otherstr_cui = setdiff(otherstr_cui,cui_str_s_2$str[s])
           otherstr_cui_str = paste(otherstr_cui, collapse = "<br/>")
-          HTML(paste(paste0("The following strings share the same CUI (",cui_str_s_2$cui[s],
-                            ") as <br/><b>", cui_str_s_2$str[s],"</b>: <br/> 
-                 <hr style='height:1px;border:none;border-top:1px double black;' />"),
-                     otherstr_cui_str))
+          HTML(paste0("The following ",length(otherstr_cui)-1, " strings share the same CUI (",cui_str_s_2$cui[s],
+                      ") as <b>", cui_str_s_2$str[s],"</b>: <br/>"))
         }else{
           HTML(paste0("No string shares the same CUI (",cui_str_s_2$cui[s],
                       ") as the one you selected - \n ", cui_str_s_2$str[s])) 
@@ -181,6 +176,32 @@ server <- function(input, output, session) {
    }, rownames = FALSE,options = list(
     pageLength = 7
       ),selection = 'single'),server = TRUE)
+  
+  output$tabledoyouknow <- DT::renderDataTable(DT::datatable({
+    s = input$table_rows_selected
+    if(length(s)>0){
+      if(input$method == "UMLS"){
+        otherstr_cui = cui_dict_1[[cui_str_s_1$loc.dict[s]]]
+        if(length(otherstr_cui)>1){
+          otherstr_cui = setdiff(otherstr_cui,cui_str_s_1$str[s])
+        }
+      }else{
+        otherstr_cui = cui_dict_2[[cui_str_s_2$loc.dict[s]]]
+        if(length(otherstr_cui)>1){
+          otherstr_cui = setdiff(otherstr_cui,cui_str_s_2$str[s])
+        }
+      }
+      data.frame("string"=otherstr_cui, "cui"=cui_str_s_1$cui[s])
+    }else{
+      
+      
+    }
+    
+  }, rownames = FALSE,options = list(
+    pageLength = 7
+  ),selection = 'single'),server = TRUE)
+  
+  
   
   output$table3 <- DT::renderDataTable(DT::datatable({
     s = input$table_rows_selected
