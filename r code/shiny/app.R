@@ -6,6 +6,7 @@ library(DT)
 library(wordcloud2)
 library(viridis)
 library(stringr)
+Sys.setenv(LANG="en_US.UTF-8")
 load("data/fulldata.RData")
 
 
