@@ -41,7 +41,7 @@ ui <- dashboardPage(
                hr(),
                h4("Possible strings"),
                br(),
-               DT::dataTableOutput("table"),
+               #DT::dataTableOutput("table"),
                style = "unite", icon = icon("table"),
                status = "primary", width = "350px",right = TRUE,
                tooltip = "Try to click one row \n as your cui string input!",
@@ -71,6 +71,7 @@ ui <- dashboardPage(
       ))),
       fluidRow(
         column(width = 6,
+               DT::dataTableOutput("table"),
                conditionalPanel(condition =  "input.table_rows_selected.length>=1",
                                 box(width = NULL,
                                     title = "Wordcloud",
