@@ -193,6 +193,35 @@ mapping_s = mapping_1
 
 cui_str_s_2 = cui_str_s_2[-seq(nrow(cui_str_s_2)-6,nrow(cui_str_s_2),by=1),]
 
+dat.new <- by(data = cui_str_s_1, INDICES = 
+                rank(cui_str_s_1$str,ties.method = "average"), FUN = function(x){
+  loc.map.new <- paste(unique(x$loc.map),collapse = ',')
+  loc.emb.new <- paste(unique(x$loc.emb),collapse = ',')
+  dat2 <- x[1,]
+  dat2$loc.map <- loc.map.new
+  dat2$loc.emb <- loc.emb.new
+  dat2
+})
+
+dat.new1 <- do.call(rbind,dat.new)
+cui_str_s_1 = dat.new1
+
+
+dat.new <- by(data = cui_str_s_2, INDICES = 
+                rank(cui_str_s_2$str,ties.method = "average"), FUN = function(x){
+                  loc.map.new <- paste(unique(x$loc.map),collapse = ',')
+                  loc.emb.new <- paste(unique(x$loc.emb),collapse = ',')
+                  dat2 <- x[1,]
+                  dat2$loc.map <- loc.map.new
+                  dat2$loc.emb <- loc.emb.new
+                  dat2
+                })
+
+dat.new1 <- do.call(rbind,dat.new)
+cui_str_s_2 = dat.new1
+
+cui_str_s_1 = cui_str_s_1[order(cui_str_s_1$str),]
+cui_str_s_2 = cui_str_s_2[order(cui_str_s_2$str),]
 a <- ls()
 
 
